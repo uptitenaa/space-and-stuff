@@ -22,11 +22,11 @@ function scoreBoard() {
     } else {
         iter = playerList.length;
     }
-    fill(255);
     stroke(0);
     textSize(guiSize / 11 - 5);
     textAlign(LEFT, TOP);
     for (let i = 0; i < iter; i++) {
+        fill(playerList[i][1].color.x, playerList[i][1].color.y, playerList[i][1].color.z);
         let striiing =  (i + 1) + " : " + playerList[i][1].name + " : score " + playerList[i][1].allPoints;
         text(striiing, width - guiSize, i * guiSize / 11);
     }
