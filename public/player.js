@@ -325,7 +325,7 @@ class Player {
                 }
                 break;
             case "bullet speed":
-                this.bulletSpeed += 2;
+                this.bulletSpeed += 3;
                 break;
         }
         if (reroll) {
