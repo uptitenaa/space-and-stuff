@@ -32,6 +32,21 @@ function scoreBoard() {
     }
 }
 
+function upgradeBoard() {
+    fill(128, 32);
+    stroke(128, 64);
+    let guiSize = GUI_SIZE / gameScale;
+    let listLength = players[myPlayer].upgradeList.length;
+    rect(0, 0, guiSize, listLength * (14 / gameScale));
+    stroke(0);
+    fill(players[myPlayer].color.x, players[myPlayer].color.y, players[myPlayer].color.z);
+    textSize(guiSize / 11 - 5);
+    textAlign(CENTER, TOP);
+    for (let i = 0; i < listLength; i++) {
+        text(players[myPlayer].upgradeList[i], guiSize / 2, i * 14 / gameScale);
+    }
+}
+
 function truncateString(str, num) { //Not my function
     // If the length of str is less than or equal to num
     // just return str--don't truncate it.

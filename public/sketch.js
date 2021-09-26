@@ -198,6 +198,7 @@ function draw() {
 	if (nameChoosen) {
 		miniMap();
 		scoreBoard();
+		upgradeBoard();
 	}
 	pop();
 	

@@ -7,6 +7,7 @@ class Player {
     }
     
     make(orig, id) {
+        this.upgradeList = [];
         this.points = 0;
         this.allPoints = 0;
         this.level = 0;
@@ -287,22 +288,22 @@ class Player {
     
     upgrade(type = "") {
         var upgradeList = {
-            0: "max_health",
-            1: "bullet_damage",
+            0: "max health",
+            1: "bullet damage",
             2: "shotgun",
-            3: "fire_rate",
-            4: "bullet_speed"
+            3: "fire rate",
+            4: "bullet speed"
         };
         if (type == "") {
             type = upgradeList[generateRandomInt(5)];
         }
         let reroll = false;
         switch (type) {
-            case "max_health":
+            case "max health":
                 this.maxHealth += 5;
                 this.health += 5;
                 break;
-            case "bullet_damage":
+            case "bullet damage":
                 this.damage += 1;
                 break;
             case "shotgun":
@@ -313,23 +314,24 @@ class Player {
                     this.spread += this.spread;
                 }
                 break;
-            case "fire_rate":
+            case "fire rate":
                 if (this.bulletTimeout == 1) {
                     reroll = true;
                 } else {
-                    this.bulletTimeout += -2;
+                    this.bulletTimeout += -3;
                     if (this.bulletTimeout < 1) {
                         this.bulletTimeout = 1;
                     }
                 }
                 break;
-            case "bullet_speed":
+            case "bullet speed":
                 this.bulletSpeed += 2;
                 break;
         }
         if (reroll) {
             return this.upgrade();
         } else {
+            this.upgradeList.push(type);
             return type;
         }
     }
