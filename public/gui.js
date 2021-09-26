@@ -27,7 +27,17 @@ function scoreBoard() {
     textAlign(LEFT, TOP);
     for (let i = 0; i < iter; i++) {
         fill(playerList[i][1].color.x, playerList[i][1].color.y, playerList[i][1].color.z);
-        let striiing =  (i + 1) + " : " + playerList[i][1].name + " : score " + playerList[i][1].allPoints;
+        let striiing =  (i + 1) + " : " + truncateString(playerList[i][1].name, 10) + " : score " + playerList[i][1].allPoints;
         text(striiing, width - guiSize, i * guiSize / 11);
     }
+}
+
+function truncateString(str, num) { //Not my function
+    // If the length of str is less than or equal to num
+    // just return str--don't truncate it.
+    if (str.length <= num) {
+        return str
+    }
+    // Return str truncated with '...' concatenated to the end of str.
+    return str.slice(0, num) + '...'
 }
