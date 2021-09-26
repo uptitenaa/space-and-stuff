@@ -17,6 +17,7 @@ var gameScale; //A variable dictating the scale of the game
 var players; //A dictionary (object that i am treating as a dictionary) containing all of the players
 var playerList; //A list containing all players
 var drones; //An array of drones
+var extras; //A dictionary of extra drones (medics and such)
 var bullets; //A dictionary of bullets
 var particles; //A dictionary of particles
 var myPlayer;
@@ -41,6 +42,7 @@ function setup() {
 	socket.on("gameHost", recGameHost);
 	socket.on("re_bullet", re_bullet);
 	socket.on("re_effect", re_effect);
+	socket.on("kill_extra", kill_extra);
 	createCanvas(windowWidth, windowHeight);
 	frameRate(30);
 	
@@ -80,6 +82,7 @@ function setup() {
 	
 	//Drone, bullet, and particle setup
 	drones = [];
+	extras = {};
 	bullets = {};
 	particles = {};
 	
@@ -116,11 +119,7 @@ function draw() {
 	for (let i in allPlayers) {
 		if (allPlayers[i].health > 0) {
 			if (inWindow(allPlayers[i].pos, allPlayers[i].size)) {
-				if (i == myPlayer) {
-					allPlayers[i].show(true);
-                } else {
-					allPlayers[i].show();
-				}
+				allPlayers[i].show();
             }
 			allPlayers[i].move();
 		}
@@ -166,6 +165,15 @@ function draw() {
 			drones[i].sendPos();
 		}
 	}
+	
+	//Extra drones (medics and such)
+	for (let i in extras) {
+		if (extras[i].health > 0) {
+			extras[i].shoot();
+			extras[i].ai();
+			extras[i].sendPos();
+        }
+    }
 	
 	//Bullets
 	for (let i in bullets) {

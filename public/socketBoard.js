@@ -4,6 +4,7 @@ function re_player(data) {
             let tempContin = true;
             if (data.id == data.orig) {
                 players[data.id] = new Player(data.orig, data.id);
+                updatePlayerList();
             } else {
                 if (typeof players[data.orig] === 'undefined') {
                     tempContin = false;
@@ -103,4 +104,8 @@ function re_bullet(data) {
             }
             break;
     }
+}
+
+function kill_extra(data) {
+    delete allPlayers[data];
 }

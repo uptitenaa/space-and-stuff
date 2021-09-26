@@ -52,6 +52,9 @@ class Bullet {
             for (let i in allPlayers) {
                 if ((this.sent != i) && (allPlayers[i].health > 0)){
                     if (allPlayers[i].isHit(this.pos)) {
+                        if ((this.sent == myPlayer) && (allPlayers[i].type == "medic")) {
+                            this.damage = 0;
+                        }
                         if (this.explosion) {
                             createExplosion(this.pos.x, this.pos.y, allPlayers[i].vel.x, allPlayers[i].vel.y, 30);
                         }

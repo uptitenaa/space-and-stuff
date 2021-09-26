@@ -61,6 +61,10 @@ function newConnection(socket) {
 		let tempRoom = data.req;
 		socket.to(tempRoom).emit("re_reqPlayer", data);
     }
+	socket.on("killExtra", killExtra);
+	function killExtra(data) {
+		socket.broadcast.emit("kill_extra", data);
+    }
 	
 	socket.on("bullet", bullet);
 	function bullet(data) {

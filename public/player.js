@@ -3,10 +3,10 @@ class Player {
         this.name = "";
         this.make(orig, id);
         allPlayers[id] = this;
-        updatePlayerList();
     }
     
     make(orig, id) {
+        this.type = "player";
         this.upgradeList = [];
         this.points = 0;
         this.allPoints = 0;
@@ -24,9 +24,14 @@ class Player {
         this.vel = createVector(tempX, tempY);
 		this.angle = random(0, TWO_PI);
         this.maxHealth = PLAYER_HEALTH;
+        this.showHealthBar = false;
+        if (this.id == myPlayer) {
+            this.showHealthBar = true;
+        }
 		this.health = PLAYER_HEALTH;
 		this.speed = PLAYER_SPEED;
 		this.size = PLAYER_SIZE;
+        this.shape = 0;
         this.drag = PLAYER_DRAG;
 		this.bulletTimer = 0;
         this.bulletTimeout = PLAYER_BULLET_TIMEOUT;
@@ -64,10 +69,10 @@ class Player {
         this.miniSize = 3;
     }
     
-    show(showHealth = false) {
+    show() {
         push();
         translate(this.pos.x, this.pos.y);
-        if (showHealth) {
+        if (this.showHealthBar) {
             this.drawHealthBar();
         }
         //Show name
@@ -88,7 +93,7 @@ class Player {
 		stroke(this.color.x, this.color.y, this.color.z);
 		//stroke(generateRandomInt(255), generateRandomInt(255), generateRandomInt(255));
     	strokeWeight(1 / gameScale);
-        this.drawShape(0);
+        this.drawShape(this.shape);
 		pop();
 			
 		//On fire effect
@@ -142,6 +147,15 @@ class Player {
     			line(-tempSize * sin(PI / 4), tempSize * cos(PI / 4), -tempSize / 3, 0);
     			line(-tempSize * sin(PI / 4), -tempSize * cos(PI / 4), -tempSize / 3, 0);
                 break;
+            case 1: //A plus
+                let tempSize1 = this.size / 4;
+                line(-tempSize1, 0, tempSize1, 0);
+                line(0, -tempSize1, 0, tempSize1);
+                break;
+            case 2: //the arrow and plus
+                this.drawShape(0);
+                this.drawShape(1);
+                break;
         }
     }
     
@@ -192,9 +206,12 @@ class Player {
                     }
                 }
             }
+            if (this.type == "medic") {
+                target = this.orig;
+            }
             if (target != "") {
     			this.angle = atan2(this.pos.y - allPlayers[target].pos.y, this.pos.x - allPlayers[target].pos.x) + PI;
-    			if (this.health > 1) {
+    			if ((this.health > 1) || (this.type != "drone")) {
     				this.accelerate(this.speed);
                 } else {
     				this.accelerate(-this.speed);
@@ -223,15 +240,16 @@ class Player {
     shoot() {
         if (this.health > 0) {
             if (this.bulletTimer == 0) {
-                this.shot();
+                this.shot(this.type);
                 this.bulletTimer = this.bulletTimeout;
             }
         }
     }
     
-    shot(type = 0) {
+    shot(type = "player") {
         switch (type) {
-            case 0: //Standard bullet fire
+            case "player": //Standard bullet fire
+            case "drone":
                 for (let i = 0; i < this.bulletCount; i++) {
                     let tempX = this.pos.x + (cos(this.angle) * (this.size / 2));
                     let tempY = this.pos.y + (sin(this.angle) * (this.size / 2));
@@ -258,13 +276,51 @@ class Player {
                     }
                 }
                 break;
+            case "medic":
+                let tempX = this.pos.x + (cos(this.angle) * (this.size / 2));
+                let tempY = this.pos.y + (sin(this.angle) * (this.size / 2));
+                let tempVel = createVector(1, 1);
+                tempVel.setMag(this.bulletSpeed);
+                tempVel.setHeading(this.angle + random(-this.spread, this.spread));
+                tempVel = tempVel.add(allPlayers[this.orig].vel);
+                let data = {
+                    id: generateRandomInt(GAME_SIZE),
+                    origId: this.id,
+                    orig: this.orig,
+                    x: tempX,
+                    y: tempY,
+                    vX: tempVel.x,
+                    vY: tempVel.y,
+                    red: 0,
+                    gre: 255,
+                    blu: 0,
+                    particle: "green",
+                    damage: -DEFULT_REGEN,
+                    explo: false,
+                    glimmer: true,
+                    type: 0
+                };
+                socket.emit("bullet", data);
+                re_bullet(data);
+                break;
         }
     }
     
     respawn(type = 0) {
-        this.make(this.orig, this.id);
         switch (type) {
+            case 0:
+                this.make(this.orig, this.id);
+                if (this.id == myPlayer) {
+                    for (let i in extras) {
+                        socket.emit("killExtra", i);
+                        delete extras[i];
+                        delete allPlayers[i];
+                    }
+                }
+                break;
             case 1:
+                this.make(this.orig, this.id);
+                this.type = "drone";
                 this.maxHealth = DRONE_HEALTH;
                 this.health = DRONE_HEALTH;
                 this.size = DRONE_SIZE;
@@ -274,8 +330,28 @@ class Player {
                 this.bulletTimer = generateRandomInt(DRONE_BULLET_TIMEOUT);
                 this.bulletTimeout = DRONE_BULLET_TIMEOUT;
                 this.level = 1;
-                this.nextLevel = 2;
+                this.nextLevel = 1;
                 this.upgrade();
+                break;
+            case "medic":
+                this.make(this.orig, this.id);
+                this.pos = allPlayers[this.orig].pos.copy();
+                this.color = allPlayers[this.orig].color.copy();
+                this.shield = allPlayers[this.orig].shield.copy();
+                this.type = "medic";
+                this.showHealthBar = true;
+                this.shape = 2;
+                this.maxHealth = DRONE_HEALTH * 4;
+                this.health = DRONE_HEALTH * 4;
+                this.size = DRONE_SIZE;
+                this.speed = DRONE_SPEED;
+                this.drag = DRONE_DRAG;
+                this.miniSize = 0;
+                this.bulletTimer = generateRandomInt(DRONE_BULLET_TIMEOUT);
+                this.bulletTimeout = DRONE_BULLET_TIMEOUT;
+                this.level = 0;
+                this.nextLevel = 1;
+                break;
         }
         
         let tempData = this.getData();
@@ -292,10 +368,11 @@ class Player {
             1: "bullet damage",
             2: "shotgun",
             3: "fire rate",
-            4: "bullet speed"
+            4: "bullet speed",
+            5: "medic"
         };
         if (type == "") {
-            type = upgradeList[generateRandomInt(5)];
+            type = upgradeList[generateRandomInt(6)];
         }
         let reroll = false;
         switch (type) {
@@ -304,9 +381,16 @@ class Player {
                 this.health += 5;
                 break;
             case "bullet damage":
-                this.damage += 1;
+                if (this.type == "medic") {
+                    reroll = true;
+                } else {
+                    this.damage += 1;
+                }
                 break;
             case "shotgun":
+                if (this.type == "medic") {
+                    reroll = true;
+                }
                 this.bulletCount += 1;
                 if (this.spread == 0) {
                     this.spread += 0.2;
@@ -326,6 +410,16 @@ class Player {
                 break;
             case "bullet speed":
                 this.bulletSpeed += 3;
+                break;
+            case "medic":
+                if (this.type == "player") {
+                    let tempId = "medic " + generateRandomInt(GAME_SIZE);
+                    extras[tempId] = new Player(this.orig, tempId);
+                    extras[tempId].health = 0;
+                    extras[tempId].respawn("medic");
+                } else {
+                    reroll = true;
+                }
                 break;
         }
         if (reroll) {
@@ -347,7 +441,7 @@ class Player {
         	orig: this.orig,
         	id: this.id,
             size: this.size,
-            allPoints:this.points,
+            points:this.allPoints,
             type: 0
         };
         socket.emit("player", data);
@@ -363,6 +457,7 @@ class Player {
             sBlu: this.shield.z,
             mini: this.miniSize,
             name: this.name,
+            shape: this.shape,
             id: this.id,
             orig: this.orig,
             type: 1,
@@ -373,6 +468,7 @@ class Player {
     
     unGetData(data) {
         this.name = data.name;
+        this.shape = data.shape;
         this.color.set(data.red, data.gre, data.blu);
         this.shield.set(data.sRed, data.sGre, data.sBlu);
         this.miniSize = data.mini;
