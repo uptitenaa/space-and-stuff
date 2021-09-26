@@ -45,6 +45,13 @@ function upgradeBoard() {
     for (let i = 0; i < listLength; i++) {
         text(players[myPlayer].upgradeList[i], guiSize / 2, i * 14 / gameScale);
     }
+    fill(0, 0);
+    stroke(128, 64);
+    rect(0, listLength * (14 / gameScale), guiSize, guiSize / 14);
+    fill(255, 0, 255, 64);
+    stroke(0, 0);
+    let tempX = map(players[myPlayer].points, 0, players[myPlayer].nextLevel, 0, guiSize);
+    rect(0, listLength * (14 / gameScale), tempX, guiSize / 14);
 }
 
 function truncateString(str, num) { //Not my function
