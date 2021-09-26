@@ -7,6 +7,7 @@ class Bullet {
         this.vel = createVector(data.vX, data.vY);
         this.color = createVector(data.red, data.gre, data.blu);
         this.damage = data.damage;
+        this.knockback = 0;
         if (this.damage == 2) {
             data.particle = "fire";
         } else if (this.damage > 2) {
@@ -54,6 +55,7 @@ class Bullet {
                     if (allPlayers[i].isHit(this.pos)) {
                         if ((this.sent == myPlayer) && (allPlayers[i].type == "medic")) {
                             this.damage = 0;
+                            this.knockback = 1;
                         }
                         if (this.explosion) {
                             createExplosion(this.pos.x, this.pos.y, allPlayers[i].vel.x, allPlayers[i].vel.y, 30);
@@ -64,6 +66,8 @@ class Bullet {
                             id: i,
                             damage: this.damage,
                             points: this.points,
+                            knockbackX: this.vel.x * this.knockback,
+                            knockbackY: this.vel.y * this.knockback,
                             type: 2
                         };
                         if (myPlayer == allPlayers[i].orig) {

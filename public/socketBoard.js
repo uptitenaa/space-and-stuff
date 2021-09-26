@@ -36,7 +36,7 @@ function re_player(data) {
         case 1:
             allPlayers[data.id].unGetData(data);
             break;
-        case 2: //Taking damage and recieving points
+        case 2: //Taking damage and recieving points and getting knockback
             let tempPlayer = allPlayers[data.id];
             tempPlayer.health += -data.damage;
             if (tempPlayer.health <= 0) {
@@ -54,14 +54,18 @@ function re_player(data) {
                 tempPlayer.health = tempPlayer.maxHealth;
             }
             
+            //knockback
+            tempPlayer.vel.x += data.knockbackX;
+            tempPlayer.vel.y += data.knockbackY;
+            
             //Points
             tempPlayer.points += data.points;
             tempPlayer.allPoints += data.points;
-            tempPlayer.size += data.points * 2;
+            tempPlayer.size += data.points * 3;
             if (tempPlayer.points >= tempPlayer.nextLevel) {
-                tempPlayer.nextLevel += tempPlayer.nextLevel;
-                tempPlayer.points = 0;
                 tempPlayer.level += 1;
+                tempPlayer.nextLevel += tempPlayer.level;
+                tempPlayer.points = 0;
                 tempPlayer.upgrade();
             }
             break;
