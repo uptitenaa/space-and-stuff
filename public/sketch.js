@@ -78,6 +78,7 @@ function setup() {
 		delete players[""];
 		delete allPlayers[""];
 		thisPlayer = players[myPlayer];
+		updatePlayerList();
 	}
 	
 	//Drone, bullet, and particle setup
