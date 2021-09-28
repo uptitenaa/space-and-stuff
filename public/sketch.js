@@ -1,6 +1,4 @@
 //I found out that stars have a major impact on performance, so maybe i should do something about that
-//Add title screen
-//Launch game
 
 var w; //The key controls
 var a;
